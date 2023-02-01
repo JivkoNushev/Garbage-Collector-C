@@ -16,8 +16,11 @@ typedef struct LinkedList
 } LinkedList;
 
 LinkedList* init_LinkedList(void *data, DataTypeLinkedList type);
+
 LinkedList* push_LinkedList(LinkedList *this, void *data, DataTypeLinkedList type);
+
 LinkedList* pop_LinkedList(LinkedList *this);
+
 void free_LinkedList(LinkedList *this);
 
 #endif

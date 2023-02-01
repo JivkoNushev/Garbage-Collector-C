@@ -20,7 +20,9 @@ static GarbageCollector_t *gc = NULL;
 void gc_init();
 
 void *gc_malloc(size_t size);
+
 void gc_deallocate();
+
 void gc_free();
 
 #endif

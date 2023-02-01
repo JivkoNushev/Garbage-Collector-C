@@ -9,18 +9,23 @@
 
 LinkedList* init_LinkedList(void *data, DataTypeLinkedList type)
 {
-    LinkedList* list = (LinkedList*)mmap(NULL, sizeof (LinkedList), PROT_NONE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
-    if((void *) -1 == list)
+    // LinkedList* list = (LinkedList*)mmap(NULL, sizeof (LinkedList), PROT_READ | PROT_WRITE | PROT_EXEC, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
+    // if((void *) -1 == list)
+    // {
+    //     gc->deallocate();
+    //     perror("mmap");
+    // } 
+
+    LinkedList* list = (LinkedList*)malloc(sizeof (LinkedList));
+    if(NULL == list)
     {
         gc->deallocate();
-        perror("mmap");
-    } 
+        perror("malloc");
+    }
 
     list->type = type;
-puts("Breaks here");
     list->data = data;
     list->next = NULL;
-
     list->push = push_LinkedList;
     list->pop = pop_LinkedList;
     list->free = free_LinkedList;
@@ -33,6 +38,7 @@ void free_LinkedList(LinkedList *this)
     if(NULL != this->next)
     {
         free_LinkedList(this->next);
+        this->next = NULL;
     }
 
     switch (this->type)
@@ -68,6 +74,7 @@ LinkedList* push_LinkedList(LinkedList *this, void *data, DataTypeLinkedList typ
     if(NULL == this->data)
     {
         this->data = data;
+        this->type = type;
         return this;
     }
 
