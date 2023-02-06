@@ -9,23 +9,18 @@
 
 LinkedList* init_LinkedList(void *data, DataTypeLinkedList type)
 {
-    // LinkedList* list = (LinkedList*)mmap(NULL, sizeof (LinkedList), PROT_READ | PROT_WRITE | PROT_EXEC, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
-    // if((void *) -1 == list)
-    // {
-    //     gc->deallocate();
-    //     perror("mmap");
-    // } 
-
     LinkedList* list = (LinkedList*)malloc(sizeof (LinkedList));
     if(NULL == list)
     {
-        gc->deallocate();
+        deallocate();
         perror("malloc");
     }
 
     list->type = type;
     list->data = data;
     list->next = NULL;
+    list->prev = NULL;
+    
     list->push = push_LinkedList;
     list->pop = pop_LinkedList;
     list->free = free_LinkedList;
@@ -50,7 +45,11 @@ void free_LinkedList(LinkedList *this)
     case DOUBLE_POINTER:
         free(*(void**)this->data);
         break;
-    
+
+    // not freeable
+    case DATATYPE_NULL:
+        break;
+
     default:
         exit_msg("Invalid datatype in LinkedList free");
         break;
@@ -61,6 +60,8 @@ void free_LinkedList(LinkedList *this)
 
 LinkedList* push_LinkedList(LinkedList *this, void *data, DataTypeLinkedList type)
 {
+    printf("Trying to push to LinkedList\n");
+
     if(NULL == this)
     {
         this = init_LinkedList(NULL, DATATYPE_NULL);
@@ -82,6 +83,7 @@ LinkedList* push_LinkedList(LinkedList *this, void *data, DataTypeLinkedList typ
     for(; NULL != it->next; it = it->next) {}
 
     it->next = init_LinkedList(data, type);
+    it->next->prev = it;
 
     return this;
 }

@@ -3,29 +3,30 @@
 
 #include <unistd.h>
 
+#include "unique_ptr.h"
 #include "gc.h"
 // keep used addresses and pointers
 // call the gc when allocating or pointing to memory
 
-// for enxt project : memlock - use it for abstraction in c oop ?
-
 int main(int argc, char const *argv[])
 {
-    // initialize the garbage collector
-    gc_init();
+    GarbageCollector();
 
-    printf("%ld\n", sysconf(_SC_PAGESIZE));
+    printf("GarbageCollector Constructed\n");
 
-    int *pointer = (int*)gc_malloc(sizeof (int));
-    puts("malloced");
-    pointer = NULL;
+    unique_ptr ptr = UniquePtr(NULL, sizeof(int));
 
-    int *lol = (int*)gc_malloc(sizeof (int));
+    printf("UniquePtr Constructed\n");
 
-    // *address = 5;
+    ptr.pointing_at = NULL;
 
-    printf("Pointer is %d\n", *pointer);
+    unique_ptr ptr2 = UniquePtr(NULL, sizeof(int));
 
-    gc_deallocate();
+    printf("UniquePtr Constructed\n");
+
+    deallocate();
+    
+    printf("GarbageCollector Deconstructed\n");
+
     return 0;
 }

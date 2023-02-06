@@ -11,3 +11,14 @@ void exit_msg(const char *msg)
     printf("%s\n", msg);
     err(EXIT_FAILURE, NULL);
 }
+
+void* err_allocate(void *ptr)
+{
+    if(NULL == ptr)
+    {
+        //gc->deallocate();
+        perror("malloc");
+    }
+
+    return ptr;
+}

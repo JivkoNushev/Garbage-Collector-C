@@ -1,13 +1,15 @@
 #ifndef LINKEDLIST
 #define LINKEDLIST
 
-typedef enum DataTypeLinkedList{DATATYPE_NULL, SIMPLE_POINTER, DOUBLE_POINTER} DataTypeLinkedList;
+typedef enum DataTypeLinkedList{DATATYPE_NULL, UNIQUE_POINTER = DATATYPE_NULL, SIMPLE_POINTER, DOUBLE_POINTER} DataTypeLinkedList;
+
 
 typedef struct LinkedList
 {
     DataTypeLinkedList type;
     void *data;
     struct LinkedList *next;
+    struct LinkedList *prev;
 
     struct LinkedList* (*push)(struct LinkedList *this, void *data, DataTypeLinkedList type);
     struct LinkedList* (*pop)(struct LinkedList *this);

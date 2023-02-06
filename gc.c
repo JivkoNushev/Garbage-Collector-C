@@ -1,125 +1,77 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include <sys/mman.h>
-
+#include "wrappers.h"
 #include "gc.h"
 
-void gc_init()
+void GarbageCollector()
 {
-    // gc = (GarbageCollector_t*) mmap(NULL, sizeof(GarbageCollector_t),  PROT_READ | PROT_WRITE | PROT_EXEC, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
-    // if((void *) -1 == gc)
-    // {
-    //     perror("mmap gc");
-    // }
+    gc = (GarbageCollector_t*) err_allocate(malloc(sizeof (GarbageCollector_t))); 
 
-    gc = (GarbageCollector_t*) malloc(sizeof(GarbageCollector_t));
-    if(NULL == gc)
-    {
-        perror("malloc gc");
-    }
+    gc->used_memory = init_LinkedList(NULL, DATATYPE_NULL);
+    gc->used_pointers = init_LinkedList(NULL, DATATYPE_NULL);
 
+    gc->deallocate = deallocate;
 
-    gc->used_pointers = init_LinkedList(NULL, DATATYPE_NULL); // double pointer
-    gc->used_addresses = init_LinkedList(NULL, DATATYPE_NULL); // simple pointer
-    
-    gc->malloc = gc_malloc;
-    gc->deallocate = gc_deallocate;
-    gc->free = gc_free;
+    gc->add_pointer = add_pointer_gc;
+    gc->add_memory = add_memory_gc;
+    gc->free = free_gc;
 }
 
-void *gc_malloc(size_t size)
+void deallocate()
 {
-    if(0 == size)
-    {
-        return NULL;
-    }
+    gc->used_memory->free(gc->used_memory);
+    gc->used_pointers->free(gc->used_pointers);
 
-    if(NULL == gc)
-    {
-        printf("inited garbage collector\n");
-        gc_init();
-    }
-    
-
-    // void *p = mmap(NULL, size, PROT_READ | PROT_WRITE | PROT_EXEC, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
-    // if((void *) -1 == p)
-    // {
-    //     gc->deallocate();
-    //     perror("mmap");
-    // }
-
-    void *p = malloc(size);
-    if(NULL == p)
-    {
-        gc->deallocate();
-        perror("malloc");
-    }
-
-    if(NULL == gc->used_addresses)
-    {
-        gc->used_addresses = init_LinkedList(NULL, DATATYPE_NULL); // simple pointer
-    }
-
-    if(NULL == gc->used_pointers)
-    {
-        gc->used_pointers = init_LinkedList(NULL, DATATYPE_NULL); // double pointer
-    }
-
-    printf("address: %p\n", gc->used_addresses);
-    printf("poitner: %p\n", &p);
-
-    gc->used_addresses->push(gc->used_addresses, p, SIMPLE_POINTER);
-    gc->used_pointers->push(gc->used_pointers, (void*)&p, DOUBLE_POINTER);
-    
-    gc->free();
- 
-    return p;
+    free(gc);
 }
 
-void gc_deallocate()
+void add_pointer_gc(unique_ptr ptr)
 {
-    if(NULL != gc && NULL != gc->used_addresses && DATATYPE_NULL != gc->used_addresses->type)
-    {
-        gc->used_addresses->free(gc->used_addresses);
-        
-        free(gc->used_pointers);
-        free(gc);
-    }
+    gc->used_pointers->push(gc->used_pointers, (void*)(unique_ptr*)ptr, UNIQUE_POINTER);        
 }
 
-void gc_free()
+void add_memory_gc(void* ptr)
 {
+    printf("Trying to add memory to GC\n");
 
-    if(NULL == gc || DATATYPE_NULL == gc->used_addresses->type)
-        return;
+    gc->used_memory->push(gc->used_memory, ptr, SIMPLE_POINTER);   
+}
 
-    int pointed = 0;
-
-    LinkedList *it_addrs_prev = gc->used_addresses;
-    for(LinkedList *it_addr = gc->used_addresses; NULL != it_addr; it_addrs_prev = it_addr, it_addr = it_addr->next)
+void free_gc()
+{
+    for (LinkedList *it_mem = gc->used_memory; NULL != it_mem; it_mem = it_mem->next)
     {
+        int used = 0;
         for(LinkedList *it_p = gc->used_pointers; NULL != it_p; it_p = it_p->next)
         {
-            puts("in");
-            printf("f address: %p\n", it_addr->data);
-            printf("f pointer: %p\n", *(void**)it_p->data);
+            printf("Seg here?\n");
+            printf("\t\t%p\n\t\t%p\n", ((unique_ptr)it_p->data).pointing_at, it_mem->data);
 
-
-            if(*(void**)it_p->data == it_addr->data)
+            if((*(unique_ptr*)(it_p->data)).pointing_at == it_mem->data)
             {
-                pointed = 1;
+                used = 1;
                 break;
             }
         }
 
-        if(0 == pointed)
+        if(!used)
         {
-            printf("Freeing\n");
-            it_addrs_prev->next = it_addr->next;
-            free(it_addr->data);
-            free(it_addr);
-            pointed = 0;
+            // gc->used_memory = gc->used_memory->remove(gc->used_memory, it_mem->data);
+            printf("\t\t\t\tFreeing unused memory\n");
+
+            if(NULL == it_mem->prev)
+            {
+                gc->used_memory = it_mem->next;
+            }
+            else
+            {
+                it_mem->prev->next = it_mem->next;
+            }
+
+            it_mem->next = NULL;
+            it_mem->free(it_mem);
         }
     }
 }
+
