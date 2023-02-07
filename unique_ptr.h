@@ -8,6 +8,6 @@ typedef struct unique_ptr
 
 } unique_ptr;
 
-unique_ptr UniquePtr(void *ptr, size_t size);
+unique_ptr* UniquePtr(void *ptr, size_t size);
 
 #endif

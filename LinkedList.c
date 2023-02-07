@@ -60,7 +60,7 @@ void free_LinkedList(LinkedList *this)
 
 LinkedList* push_LinkedList(LinkedList *this, void *data, DataTypeLinkedList type)
 {
-    printf("Trying to push to LinkedList\n");
+    DEBUG_PRINT printf("Trying to push to LinkedList\n");
 
     if(NULL == this)
     {
@@ -94,7 +94,6 @@ LinkedList* pop_LinkedList(LinkedList *this)
     {
         return NULL;
     }
-
 
     LinkedList *it = this;
 
