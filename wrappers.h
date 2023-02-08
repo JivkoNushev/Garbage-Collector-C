@@ -1,7 +1,7 @@
 #ifndef WRAPPERS
 #define WRAPPERS
 
-#define DEBUG_MODE 0
+#define DEBUG_MODE 1
 #define DEBUG_START if(DEBUG_MODE){
 #define DEBUG_END }
 
